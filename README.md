@@ -1,4 +1,4 @@
-# Smart Text Summarizer
+# Text Summarizer
 It extracting the core idea from long text efficiently using intelligent sentence scoring and optional file upload support.
 
 ## Features
