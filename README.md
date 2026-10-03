@@ -13,8 +13,8 @@ It extracting the core idea from long text efficiently using intelligent sentenc
 - Summary History (last 5 summaries)
 
 ## Tech Stack
-Frontend: HTML5, CSS3, JavaScript, Bootstrap 5
-Backend: Python, Flask, NLTK (Natural Language Toolkit)
+- Frontend: HTML5, CSS3, JavaScript, Bootstrap 5
+- Backend: Python, Flask, NLTK (Natural Language Toolkit)
 
 ## Working
 The application uses an extractive summarization approach:
