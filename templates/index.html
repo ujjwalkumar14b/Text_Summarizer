@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #111111;
+            --white: #ffffff;
+            --gray-100: #f7f7f7;
+            --gray-200: #e9e9e9;
+            --gray-500: #777777;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: var(--white);
+            color: var(--black);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .navbar {
+            border-bottom: 1px solid var(--black);
+            background: var(--white);
+        }
+
+        .brand {
+            color: var(--black);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            text-decoration: none;
+        }
+
+        .page {
+            max-width: 920px;
+            padding-top: 64px;
+            padding-bottom: 64px;
+        }
+
+        .eyebrow {
+            margin-bottom: 10px;
+            color: var(--gray-500);
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: clamp(2rem, 5vw, 3.25rem);
+            font-weight: 700;
+            letter-spacing: -0.05em;
+        }
+
+        .panel {
+            border: 1px solid var(--black);
+            border-radius: 0;
+            background: var(--white);
+        }
+
+        .panel-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--black);
+            font-weight: 700;
+        }
+
+        .panel-body {
+            padding: 26px;
+        }
+
+        .form-label {
+            margin-bottom: 9px;
+            font-size: .82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 46px;
+            border: 1px solid #bdbdbd;
+            border-radius: 0;
+            color: var(--black);
+        }
+
+        textarea.form-control {
+            min-height: 190px;
+            resize: vertical;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--black);
+            box-shadow: 0 0 0 2px rgba(17, 17, 17, .12);
+        }
+
+        .form-check-input {
+            border-color: var(--black);
+            border-radius: 50% !important;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--black);
+            border-color: var(--black);
+        }
+
+        .choice-box {
+            padding: 13px 15px;
+            border: 1px solid var(--gray-200);
+            background: var(--gray-100);
+        }
+
+        .choice-box:has(input:checked) {
+            border-color: var(--black);
+            background: var(--white);
+        }
+
+        .form-text {
+            color: var(--gray-500);
+            font-size: .8rem;
+        }
+
+        .range-value {
+            display: inline-flex;
+            min-width: 32px;
+            justify-content: center;
+            padding: 3px 8px;
+            border: 1px solid var(--black);
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        input[type="range"] {
+            accent-color: var(--black);
+        }
+
+        .btn-black {
+            width: 100%;
+            min-height: 48px;
+            border: 1px solid var(--black);
+            border-radius: 0;
+            background: var(--black);
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .btn-black:hover,
+        .btn-black:focus {
+            background: var(--white);
+            color: var(--black);
+            border-color: var(--black);
+        }
+
+        .btn-outline-black {
+            border: 1px solid var(--black);
+            border-radius: 0;
+            background: var(--white);
+            color: var(--black);
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .btn-outline-black:hover {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        .loading {
+            border: 1px solid var(--gray-200);
+            padding: 18px;
+            text-align: center;
+            color: var(--gray-500);
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            margin: 0 auto 9px;
+            border: 2px solid var(--gray-200);
+            border-top-color: var(--black);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-content {
+            white-space: pre-wrap;
+            line-height: 1.75;
+        }
+
+        .history-item {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .history-item:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .history-item p {
+            margin: 6px 0 0;
+            color: #444;
+        }
+
+        .d-none { display: none !important; }
+
+        @media (max-width: 576px) {
+            .page {
+                padding-top: 38px;
+                padding-bottom: 38px;
+            }
+
+            .panel-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    
+
+    <main class="container page">
+        <div class="eyebrow">Text Summarizer</div>
+        <h1>Turn long text into a concise summary.</h1>
+
+        <section class="panel">
+            <div class="panel-header">Create summary</div>
+
+            <div class="panel-body">
+                <form id="summarizeForm" enctype="multipart/form-data">
+
+                    <div class="mb-4">
+                        <label class="form-label d-block">Input method</label>
+                        <div class="row g-2">
+                            <div class="col-sm-6">
+                                <label class="choice-box d-flex align-items-center gap-2 w-100">
+                                    <input id="inputTextMode" class="form-check-input mt-0"
+                                           type="radio" name="input_mode" value="text" checked>
+                                    <span>Paste text</span>
+                                </label>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="choice-box d-flex align-items-center gap-2 w-100">
+                                    <input id="inputFileMode" class="form-check-input mt-0"
+                                           type="radio" name="input_mode" value="file">
+                                    <span>Upload .txt</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label d-block">Output format</label>
+                        <div class="row g-2">
+                            <div class="col-sm-6">
+                                <label class="choice-box d-flex align-items-center gap-2 w-100">
+                                    <input id="formatParagraph" class="form-check-input mt-0"
+                                           type="radio" name="format_type"
+                                           value="paragraph" checked>
+                                    <span>Paragraph</span>
+                                </label>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="choice-box d-flex align-items-center gap-2 w-100">
+                                    <input id="formatBullets" class="form-check-input mt-0"
+                                           type="radio" name="format_type"
+                                           value="bullets">
+                                    <span>Bullet points</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label mb-0" for="lengthSlider">Summary length</label>
+                            <span class="range-value"><span id="lengthValue">3</span></span>
+                        </div>
+
+                        <input type="range" class="form-range" id="lengthSlider"
+                               name="num_sentences" min="2" max="15" value="3"
+                               aria-label="Summary length in sentences">
+
+                        <div class="form-text">
+                            Number of sentences in the generated summary.
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="textContainer">
+                        <label class="form-label" for="inputText">Enter text</label>
+                        <textarea id="inputText" name="input_text" rows="8"
+                                  class="form-control"
+                                  placeholder="Paste up to 15,000 characters..."></textarea>
+                        <div id="charCount" class="form-text mt-2">0 characters (Limit: 15,000)</div>
+                    </div>
+
+                    <div class="mb-4 d-none" id="fileContainer">
+                        <label class="form-label" for="uploadedFile">Upload .txt file</label>
+                        <input id="uploadedFile" class="form-control" type="file"
+                               name="uploaded_file" accept=".txt">
+                        <div class="form-text mt-2">
+                            Max file size: 1MB (first 15,000 characters summarized)
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-black">Summarize</button>
+                </form>
+
+                <div id="loadingIndicator" class="loading d-none mt-4" aria-live="polite">
+                    <div class="spinner"></div>
+                    Generating summary...
+                </div>
+
+                <div id="summaryResult" class="panel mt-4 d-none">
+                    <div class="panel-header d-flex align-items-center justify-content-between gap-3">
+                        <span>Summary</span>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-outline-black btn-sm" type="button" id="downloadBtn" >Download</button>
+                            <button class="btn btn-outline-black btn-sm" type="button" id="copyBtn" >Copy</button>
+                            <button class="btn btn-outline-black btn-sm" type="button"id="historyBtn" >History</button>
+                        </div>
+                    </div>
+                    <div class="panel-body result-content" id="summaryText"></div>
+                </div>
+
+                <div id="historySection" class="d-none mt-4">
+                    <div class="panel">
+                        <div class="panel-header">Summary history · Last 5</div>
+                        <div class="panel-body" id="historyContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('summarizeForm');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const summaryResult = document.getElementById('summaryResult');
+    const summaryText = document.getElementById('summaryText');
+    const historySection = document.getElementById('historySection');
+    const historyContainer = document.getElementById('historyContainer');
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const historyBtn = document.getElementById('historyBtn');
+
+    const inputModeRadios = document.querySelectorAll('input[name="input_mode"]');
+    const textContainer = document.getElementById("textContainer");
+    const fileContainer = document.getElementById("fileContainer");
+
+    const inputText = document.getElementById("inputText");
+    const charCount = document.getElementById("charCount");
+
+    const lengthSlider = document.getElementById("lengthSlider");
+    const lengthValue = document.getElementById("lengthValue");
+
+    let summaryHistory = [];
+    let currentSummary = "";
+    let typingActive = false;
+
+    
+
+
+    
+    /* =========================
+       INPUT MODE TOGGLE
+    ========================== */
+
+    inputModeRadios.forEach(radio => {
+        radio.addEventListener("change", function () {
+            if (this.value === "text") {
+                textContainer.classList.remove("d-none");
+                fileContainer.classList.add("d-none");
+            } else {
+                textContainer.classList.add("d-none");
+                fileContainer.classList.remove("d-none");
+            }
+        });
+    });
+
+    /* =========================
+       CHARACTER COUNTER
+    ========================== */
+
+    if (inputText && charCount) {
+        inputText.addEventListener("input", function () {
+            charCount.textContent =
+                `${this.value.length} characters (Limit: 15,000)`;
+        });
+    }
+
+    /* =========================
+       SLIDER
+    ========================== */
+
+    if (lengthSlider && lengthValue) {
+        lengthSlider.addEventListener("input", function () {
+            lengthValue.textContent = this.value;
+        });
+    }
+
+    /* =========================
+       TYPING ANIMATION (SAFE)
+    ========================== */
+
+    function typeEffect(text, element, speed = 10) {
+
+        typingActive = true;
+        element.innerHTML = "";
+        let i = 0;
+        element.classList.add("typing");
+
+        function typing() {
+            if (!typingActive) return;
+
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typing, speed);
+            } else {
+                element.classList.remove("typing");
+                typingActive = false;
+            }
+        }
+
+        typing();
+    }
+
+    /* =========================
+       FORM SUBMIT
+    ========================== */
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        loadingIndicator.classList.remove('d-none');
+        summaryResult.classList.add('d-none');
+
+        fetch('/summarize', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            loadingIndicator.classList.add('d-none');
+
+            if (data.success) {
+
+                const fullSummary =
+`${data.summary}
+
+----------------------------------
+
+Original Words: ${data.original_words}
+Summary Words: ${data.summary_words}
+Reduction: ${data.reduction}%`;
+
+                currentSummary = fullSummary;
+
+                summaryResult.classList.remove('d-none');
+
+                // Stop any previous animation
+                typingActive = false;
+
+                // Start new animation
+                summaryText.classList.add("result-content");               
+                typeEffect(currentSummary, summaryText);
+
+                // Save history
+                summaryHistory.unshift(data.summary);
+                if (summaryHistory.length > 5) summaryHistory.pop();
+
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(() => {
+            loadingIndicator.classList.add('d-none');
+            alert("Unexpected error occurred.");
+        });
+    });
+
+    /* =========================
+       DOWNLOAD
+    ========================== */
+
+    if (downloadBtn) {
+        downloadBtn.addEventListener("click", function () {
+
+            const now = new Date();
+            const fileName =
+                `summary_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}.txt`;
+
+            const blob = new Blob([currentSummary], { type: "text/plain" });
+            const link = document.createElement("a");
+
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        });
+    }
+
+    /* =========================
+       COPY
+    ========================== */
+
+    if (copyBtn) {
+        copyBtn.addEventListener("click", function () {
+            navigator.clipboard.writeText(currentSummary);
+
+            copyBtn.innerText = "Copied!";
+            setTimeout(() => {
+                copyBtn.innerText = "Copy";
+            }, 1500);
+        });
+    }
+
+    /* =========================
+       HISTORY
+    ========================== */
+
+    if (historyBtn) {
+        historyBtn.addEventListener("click", function () {
+
+            historySection.classList.toggle("d-none");
+            historyContainer.innerHTML = "";
+
+            summaryHistory.forEach((item, index) => {
+                historyContainer.innerHTML += `
+                    <div class="history-item">
+                        <strong>Summary ${index + 1}</strong>
+                        <p>
+                            ${item}
+                        </p>
+                    </div>
+                `;
+            });
+        });
+    }
+});
+    </script>
+</body>
+</html>
